@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AvatarProvider } from "@/components/avatar-context";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const grotesk = Space_Grotesk({ variable: "--font-grotesk", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const jbMono = JetBrains_Mono({ variable: "--font-jb-mono", subsets: ["latin"] });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata = {
   title: "Iqra Rafiq | Full Stack & AI Developer",
@@ -20,10 +15,8 @@ export const metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${grotesk.variable} ${inter.variable} ${jbMono.variable}`}>
+
       <body className="min-h-full flex flex-col"><AvatarProvider>{children}</AvatarProvider></body>
     </html>
   );
