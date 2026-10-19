@@ -27,6 +27,7 @@ export async function POST(req) {
   }));
 
   try {
+    console.log("key loaded:", process.env.GROQ_API_KEY);
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -34,15 +35,20 @@ export async function POST(req) {
         Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+        model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
         temperature: 0.4,
-        max_tokens: 400,
+        max_tokens: 1000,
+        reasoning_effort: "low",
         messages: [{ role: "system", content: SYSTEM }, ...clean],
       }),
     });
 
     if (r.status === 429) return Response.json({ error: "quota" }, { status: 429 });
-    if (!r.ok) return Response.json({ error: "upstream" }, { status: 502 });
+    if (!r.ok) {
+      const text = await r.text();
+      console.error("Groq error:", r.status, text);
+      return Response.json({ error: "upstream" }, { status: 502 });
+    }
 
     const data = await r.json();
     return Response.json({ reply: data.choices?.[0]?.message?.content ?? "" });
