@@ -444,7 +444,27 @@ export default function Home() {
 
           <HeroOrb />
         </section>
-
+{/* About */}
+<section id="about" className="scroll-mt-24 border-b border-white/[0.07] py-16">
+  <Heading eyebrow="ABOUT" title="A bit about me" />
+  <div className="mt-8 grid gap-8 md:grid-cols-[1.4fr_1fr]">
+    <p className="text-base leading-8 text-slate-400">
+      I&apos;m a full stack developer from Karachi who built her foundations in healthcare
+      software: secure, real-time systems used by hospitals, doctors and patients. I enjoy
+      turning complicated workflows into products people actually find easy to use. Lately
+      I&apos;ve been going deeper into AI, building RAG apps and agent pipelines alongside my
+      Master&apos;s in Data Science.
+    </p>
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <p className="font-mono text-[11px] tracking-[0.2em] text-cyan-300">CURRENTLY EXPLORING</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        {["RAG", "AI agents", "Voice interfaces", "Real-time systems"].map((t) => (
+          <span key={t} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-slate-300">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
         {/* Projects */}
         <section id="projects" className="scroll-mt-24 border-b border-white/[0.07] py-16">
           <Heading eyebrow="MY WORK" title="Projects" />
@@ -547,7 +567,7 @@ export default function Home() {
 
       <footer className="border-t border-white/[0.07]">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <span>© {new Date().getFullYear()} Iqra Rafiq</span>
+          <span>© 2026 Iqra Rafiq</span>
           <span>Build · Learn · Grow <span className="text-violet-400">♡</span></span>
         </div>
       </footer>
