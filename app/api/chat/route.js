@@ -1,16 +1,39 @@
 import { SYSTEM } from "../../../lib/knowledge.js";
 
+// Best-effort limits (per server instance; they reset when it restarts).
 const hits = new Map();
+const PER_MINUTE = 6;
+const PER_HOUR = 40;
+
 function limited(ip) {
   const now = Date.now();
-  const recent = (hits.get(ip) || []).filter((t) => now - t < 60_000);
+  const recent = (hits.get(ip) || []).filter((t) => now - t < 3_600_000);
   recent.push(now);
   hits.set(ip, recent);
-  return recent.length > 6;
+
+  // keep the map from growing forever
+  if (hits.size > 500) {
+    for (const [key, times] of hits) {
+      if (now - times[times.length - 1] > 3_600_000) hits.delete(key);
+    }
+  }
+
+  const lastMinute = recent.filter((t) => now - t < 60_000).length;
+  return lastMinute > PER_MINUTE || recent.length > PER_HOUR;
 }
 
 export async function POST(req) {
-  const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0] || "unknown";
+  // Only accept requests coming from this site's own pages.
+  const origin = req.headers.get("origin");
+  if (origin) {
+    let host = "";
+    try { host = new URL(origin).host; } catch {}
+    if (host !== req.headers.get("host")) {
+      return Response.json({ error: "forbidden" }, { status: 403 });
+    }
+  }
+
+  const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
   if (limited(ip)) return Response.json({ error: "rate_limited" }, { status: 429 });
 
   let body;
@@ -22,12 +45,11 @@ export async function POST(req) {
   }
 
   const clean = body.messages.slice(-8).map((m) => ({
-    role: m.role === "assistant" ? "assistant" : "user",
-    content: String(m.content).slice(0, 500),
+    role: m?.role === "assistant" ? "assistant" : "user",
+    content: String(m?.content ?? "").slice(0, 500),
   }));
 
   try {
-    console.log("key loaded:", process.env.GROQ_API_KEY);
     const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -37,7 +59,7 @@ export async function POST(req) {
       body: JSON.stringify({
         model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
         temperature: 0.4,
-        max_tokens: 1000,
+        max_tokens: 600,
         reasoning_effort: "low",
         messages: [{ role: "system", content: SYSTEM }, ...clean],
       }),
